@@ -2,7 +2,6 @@
 
 ![C++17](https://img.shields.io/badge/C++-17-blue?style=for-the-badge&logo=c%2B%2B)
 ![header-only](https://img.shields.io/badge/header--only-yellow?style=for-the-badge)
-![license](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)
 
 ---
 
