@@ -1,4 +1,4 @@
-# dodt - Data-Oriented Design Toolkit
+# world.hpp - Data-Oriented Design Toolkit 
 
 ![C++17](https://img.shields.io/badge/C++-17-blue?style=for-the-badge&logo=c%2B%2B)
 ![header-only](https://img.shields.io/badge/header--only-yellow?style=for-the-badge)
@@ -7,9 +7,9 @@
 
 ## 📖 Description / Описание
 
-**EN:** A single-header C++ library for Data-Oriented Design (DOD), implementing the concept of "worlds" - efficient storage and management of multiple objects of the same type.
+**EN:** A single-header C++17 library for Data-Oriented Design (DOD), based on compile-time component lists. It provides maximum performance through tuple-based storage, direct memory access, and zero run-time overhead. Perfect for scenarios where the data layout is known in advance.
 
-**RU:** Однозаголовочная C++ библиотека для Data-Oriented Design (DOD), реализующая концепцию "миров" - эффективного хранения и управления множеством однотипных объектов.
+**RU:** Однозаголовочная C++17 библиотека для Data-Oriented Design (DOD), основанная на списке компонентов, известном во время компиляции. Обеспечивает максимальную производительность благодаря хранению в `std::tuple`, прямому доступу к памяти и отсутствию накладных расходов во время выполнения. Идеальна, когда структура данных фиксирована заранее.
 
 ---
 
@@ -23,73 +23,38 @@
 // EN: Instead of this / RU: Вместо этого:
 std::vector<Ball> balls;  // Array of objects / Массив объектов
 
-// EN: We do this / RU: Мы делаем так:
-dod::World balls(10);
-balls.create_storage<float>("x");
-balls.create_storage<float>("y");
-balls.create_storage<float>("vx");
-balls.create_storage<float>("vy");
+// EN: We define the world with a fixed component list
+// RU: Определяем мир с фиксированным списком компонентов
+dod::World<Position, Velocity, Health> gameWorld(1000);
 ```
 
 ## 📦 Features / Особенности
+
 **EN:**
 
-Single-header - just one file world.hpp
+- Single-header – just one file world.hpp
 
-Zero-cost abstractions - direct memory access via pointers
+- Zero-cost abstractions – direct memory access via pointers, no virtual calls, no map lookups
 
-Type-safe - runtime type checking
+- Type-safe – component types are checked at compile time
 
-SIMD-friendly - data stored in dense arrays
+- SIMD-friendly – data stored in dense arrays (struct-of-arrays)
 
-Minimalism - only what's needed for DOD
+- Minimalism – only what's needed for DOD, no dynamic string-based storage creation
 
 **RU:**
 
-Single-header - всего один файл world.hpp
+- Single-header – всего один файл world.hpp
 
-Zero-cost абстракции - прямой доступ к памяти через указатели
+- Zero-cost абстракции – прямой доступ к памяти через указатели, без виртуальных вызовов и поисков по map
 
-Type-safe - проверка типов во время выполнения
+- Type-safe – типы компонентов проверяются на этапе компиляции
 
-SIMD-friendly - данные хранятся в плотных массивах
+- SIMD-friendly – данные хранятся в плотных массивах (struct-of-arrays)
 
-Минимализм - только то, что нужно для DOD
-
-## 💡 Usage Examples / Примеры использования
-Example 1: Particle Simulation / Пример 1: Симуляция частиц
-
-**EN:** A simple particle system using the World concept:
-**RU:** Простая система частиц с использованием концепции World:
-
-```cpp
-struct ParticleSystem {
-    dod::World world;
-    
-    ParticleSystem(size_t count) : world(count) {
-        world.create_storage<float>("x");
-        world.create_storage<float>("y");
-        world.create_storage<float>("vx");
-        world.create_storage<float>("vy");
-        world.create_storage<float>("mass");
-    }
-    
-    void update(float dt) {
-        float* x = world.get_storage_data<float>("x");
-        float* y = world.get_storage_data<float>("y");
-        float* vx = world.get_storage_data<float>("vx");
-        float* vy = world.get_storage_data<float>("vy");
-        
-        for (size_t i = 0; i < world.size(); ++i) {
-            x[i] += vx[i] * dt;
-            y[i] += vy[i] * dt;
-        }
-    }
-};
-```
+- Минимализм – только то, что нужно для DOD, без динамического создания хранилищ по строкам
 
 ## ⚠️ Warning / Предупреждение
+**EN:** ⚡ This approach is not a silver bullet, but in specific cases it can provide significant performance gains. 
 
-**EN:** ⚡ This approach is not a silver bullet, but in specific cases it can provide significant performance gains (I managed to achieve a 7x speedup in my tests). This approach will give you an advantage in certain situations - you need to test it in your own project! 🚀
-
-**RU:** ⚡ Данный подход не является панацеей, но в отдельных случаях может давать значительный прирост производительности (я сумел получить семикратное ускорение на своих тестах). Этот подход даст выигрыш в определенных ситуациях - нужно проверять на своем проекте! 🚀
+**RU:** ⚡ Данный подход не является панацеей, но в отдельных случаях может давать значительный прирост производительности.
