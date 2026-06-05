@@ -34,26 +34,26 @@ dod::World<Position, Velocity, Health> gameWorld(1000);
 
 - Single-header – just one file world.hpp
 
-- Zero-cost abstractions – direct memory access via pointers, no virtual calls, no map lookups
+- Zero-cost abstractions – direct memory access via pointers
 
 - Type-safe – component types are checked at compile time
 
 - SIMD-friendly – data stored in dense arrays (struct-of-arrays)
 
-- Minimalism – only what's needed for DOD, no dynamic string-based storage creation
+- Minimalism – only what's needed for DOD 
 
 **RU:**
 
 - Single-header – всего один файл world.hpp
 
-- Zero-cost абстракции – прямой доступ к памяти через указатели, без виртуальных вызовов и поисков по map
+- Zero-cost абстракции – прямой доступ к памяти через указатели
 
 - Type-safe – типы компонентов проверяются на этапе компиляции
 
 - SIMD-friendly – данные хранятся в плотных массивах (struct-of-arrays)
 
-- Минимализм – только то, что нужно для DOD, без динамического создания хранилищ по строкам
-
+- Минимализм – только то, что нужно для DOD
+ 
 ## ⚠️ Warning / Предупреждение
 **EN:** ⚡ This approach is not a silver bullet, but in specific cases it can provide significant performance gains. 
 
