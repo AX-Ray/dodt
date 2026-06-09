@@ -9,16 +9,20 @@ namespace dod {
 
 template <typename... Components>
     class World {
-        std::tuple<std::vector<Components>...> storages;
-        size_t entity_count = 0;
+    private:
 
-    public:        
+        std::tuple<std::vector<Components>...> storages;        
+        std::vector<bool> alive; //list? 
+
+    public:   
+
         explicit World(size_t reserve_size = 0) {
             reserve(reserve_size); 
         }
         
         void reserve(size_t cap) {
             std::apply([cap](auto&... vec) { (vec.reserve(cap), ...); }, storages);
+            alive.reserve(cap);
         }
         
         template <typename... Args>
@@ -26,8 +30,8 @@ template <typename... Components>
             static_assert(sizeof...(Args) == sizeof...(Components),"Must provide values for all components");        
             std::apply([&](auto&... vecs) {
                 ((vecs.emplace_back(std::forward<Args>(args))), ...);
-            }, storages);
-            ++entity_count;
+            }, storages);   
+            alive.push_back(true); 
         }
         
         template <typename T>
@@ -40,7 +44,23 @@ template <typename... Components>
             return std::get<std::vector<T>>(storages).data();
         }
 
-        size_t size() const { return entity_count; }
+        template <typename... ComponentTypes, typename Func>
+        void for_each(Func&& func) {
+            auto& vec_tuple = std::forward_as_tuple(
+                std::get<std::vector<ComponentTypes>>(storages)...
+            );
+            
+            for (size_t i = 0; i < alive.size(); ++i) {
+                if (!alive[i]) continue;
+                std::apply([&](auto&... vecs) {
+                    func(vecs[i]...);
+                }, vec_tuple);
+            }
+        }
+
+        //void delete
+
+        size_t size() const { return alive.size(); }
     };
 
 } 
