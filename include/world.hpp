@@ -4,6 +4,8 @@
 #include <vector>   
 #include <utility> 
 #include <cstddef>  
+#include <algorithm> 
+#include <functional> 
 
 namespace dod {
 
@@ -46,7 +48,7 @@ template <typename... Components>
 
         template <typename... ComponentTypes, typename Func>
         void for_each(Func&& func) {
-            auto& vec_tuple = std::forward_as_tuple(
+            auto&& vec_tuple = std::forward_as_tuple(
                 std::get<std::vector<ComponentTypes>>(storages)...
             );
             
@@ -58,7 +60,32 @@ template <typename... Components>
             }
         }
 
-        //void delete
+        void remove_entity(size_t index) {
+            if (index >= alive.size() || !alive[index]) return;
+                        
+            size_t last = alive.size() - 1;
+            if (index != last) {
+                std::apply([&](auto&... vecs) {
+                    ((vecs[index] = std::move(vecs[last])), ...);
+                }, storages);
+                alive[index] = alive[last];
+            }
+            
+            std::apply([&](auto&... vecs) {
+                ((vecs.pop_back()), ...);
+            }, storages);
+            alive.pop_back();
+        }
+        
+        void remove_entities(std::vector<size_t> indices) {
+            std::sort(indices.begin(), indices.end(), std::greater<>());
+            for (size_t idx : indices) {
+                if (idx < alive.size() && alive[idx]) {
+                    remove_entity(idx); 
+                }
+            }
+        }
+
 
         size_t size() const { return alive.size(); }
     };
