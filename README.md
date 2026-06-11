@@ -25,7 +25,7 @@ std::vector<Ball> balls;  // Array of objects / Массив объектов
 
 // EN: We define the world with a fixed component list
 // RU: Определяем мир с фиксированным списком компонентов
-dod::World<Position, Velocity, Health> gameWorld(1000);
+dodt::World<Position, Velocity, Health> gameWorld(1000);
 ```
 
 ## 📦 Features / Особенности
