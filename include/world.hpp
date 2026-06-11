@@ -13,8 +13,8 @@ template <typename... Components>
     class World {
     private:
 
-        std::tuple<std::vector<Components>...> storages;        
-        std::vector<bool> alive; //list?         
+        std::tuple<std::vector<Components>...> storages;    
+        size_t entt_count = 0;                   
 
     public:   
 
@@ -23,15 +23,14 @@ template <typename... Components>
         }
         
         void reserve(size_t cap) {
-            std::apply([cap](auto&... vec) { (vec.reserve(cap), ...); }, storages);
-            alive.reserve(cap);
+            std::apply([cap](auto&... vec) { (vec.reserve(cap), ...); }, storages);                     
         }
         
         template <typename... Args>
         void add_entity(Args&&... args) {
             static_assert(sizeof...(Args) == sizeof...(Components),"Must provide values for all components");        
-            std::apply([&](auto&... vecs) {((vecs.emplace_back(std::forward<Args>(args))), ...);}, storages);   
-            alive.push_back(true); 
+            std::apply([&](auto&... vecs) {((vecs.emplace_back(std::forward<Args>(args))), ...);}, storages);                
+            ++entt_count;
         }
         
         template <typename T>
@@ -48,8 +47,7 @@ template <typename... Components>
         void for_each(Func&& func) {
             auto&& vec_tuple = std::forward_as_tuple(std::get<std::vector<ComponentTypes>>(storages)...);
             
-            for (size_t i = 0; i < alive.size(); ++i) {
-                if (!alive[i]) continue;
+            for (size_t i = 0; i < entt_count; ++i) {                
                 std::apply([&](auto&... vecs) {func(vecs[i]...);}, vec_tuple);
             }
         }
@@ -57,36 +55,34 @@ template <typename... Components>
         template <typename... ComponentTypes, typename Func>
         void for_each(Func&& func) const {
             const auto& vec_tuple = std::tie(std::get<const std::vector<ComponentTypes>>(storages)...);
-            for (size_t i = 0; i < alive.size(); ++i) {
-                if (!alive[i]) continue;
+            for (size_t i = 0; i < entt_count; ++i) {                
                 std::apply([&](const auto&... vecs) { func(vecs[i]...); }, vec_tuple);
             }
         }
 
         void remove_entity(size_t index) {
-            if (index >= alive.size() || !alive[index]) return;
+            if (index >= entt_count) return;
                         
-            size_t last = alive.size() - 1;
+            size_t last = entt_count - 1;
             if (index != last) {
-                std::apply([&](auto&... vecs) {((vecs[index] = std::move(vecs[last])), ...);}, storages);
-                alive[index] = alive[last];
+                std::apply([&](auto&... vecs) {((vecs[index] = std::move(vecs[last])), ...);}, storages);                
             }
             
-            std::apply([&](auto&... vecs) {((vecs.pop_back()), ...);}, storages);
-            alive.pop_back();
+            std::apply([&](auto&... vecs) {((vecs.pop_back()), ...);}, storages);   
+            --entt_count;         
         }
         
         void remove_entities(std::vector<size_t> indices) {
             std::sort(indices.begin(), indices.end(), std::greater<>());
             for (size_t idx : indices) {
-                if (idx < alive.size() && alive[idx]) {
+                if (idx < entt_count) {
                     remove_entity(idx); 
                 }
             }
         }
 
 
-        size_t size() const { return alive.size(); }
+        size_t size() const { return entt_count; }
     };
 
 } 
