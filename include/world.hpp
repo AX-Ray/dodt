@@ -54,6 +54,15 @@ template <typename... Components>
             }
         }
 
+        template <typename... ComponentTypes, typename Func>
+        void for_each(Func&& func) const {
+            const auto& vec_tuple = std::tie(std::get<const std::vector<ComponentTypes>>(storages)...);
+            for (size_t i = 0; i < alive.size(); ++i) {
+                if (!alive[i]) continue;
+                std::apply([&](const auto&... vecs) { func(vecs[i]...); }, vec_tuple);
+            }
+        }
+
         void remove_entity(size_t index) {
             if (index >= alive.size() || !alive[index]) return;
                         
