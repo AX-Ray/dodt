@@ -7,14 +7,14 @@
 #include <algorithm> 
 #include <functional> 
 
-namespace dod {
+namespace dodt {
 
 template <typename... Components>
     class World {
     private:
 
         std::tuple<std::vector<Components>...> storages;        
-        std::vector<bool> alive; //list? 
+        std::vector<bool> alive; //list?         
 
     public:   
 
@@ -30,9 +30,7 @@ template <typename... Components>
         template <typename... Args>
         void add_entity(Args&&... args) {
             static_assert(sizeof...(Args) == sizeof...(Components),"Must provide values for all components");        
-            std::apply([&](auto&... vecs) {
-                ((vecs.emplace_back(std::forward<Args>(args))), ...);
-            }, storages);   
+            std::apply([&](auto&... vecs) {((vecs.emplace_back(std::forward<Args>(args))), ...);}, storages);   
             alive.push_back(true); 
         }
         
@@ -48,15 +46,11 @@ template <typename... Components>
 
         template <typename... ComponentTypes, typename Func>
         void for_each(Func&& func) {
-            auto&& vec_tuple = std::forward_as_tuple(
-                std::get<std::vector<ComponentTypes>>(storages)...
-            );
+            auto&& vec_tuple = std::forward_as_tuple(std::get<std::vector<ComponentTypes>>(storages)...);
             
             for (size_t i = 0; i < alive.size(); ++i) {
                 if (!alive[i]) continue;
-                std::apply([&](auto&... vecs) {
-                    func(vecs[i]...);
-                }, vec_tuple);
+                std::apply([&](auto&... vecs) {func(vecs[i]...);}, vec_tuple);
             }
         }
 
@@ -65,15 +59,11 @@ template <typename... Components>
                         
             size_t last = alive.size() - 1;
             if (index != last) {
-                std::apply([&](auto&... vecs) {
-                    ((vecs[index] = std::move(vecs[last])), ...);
-                }, storages);
+                std::apply([&](auto&... vecs) {((vecs[index] = std::move(vecs[last])), ...);}, storages);
                 alive[index] = alive[last];
             }
             
-            std::apply([&](auto&... vecs) {
-                ((vecs.pop_back()), ...);
-            }, storages);
+            std::apply([&](auto&... vecs) {((vecs.pop_back()), ...);}, storages);
             alive.pop_back();
         }
         
